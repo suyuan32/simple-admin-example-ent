@@ -69,7 +69,7 @@ func (l *InitDatabaseLogic) InitDatabase() (resp *types.BaseMsgResp, err error) 
 		exam.HasCoursesWith(course.NameEQ("Art"))).Aggregate(ent.Sum(exam.FieldScore)).Int(l.ctx)
 	fmt.Println("Art course score sum: ", sumArtCourse)
 
-	// 聚类例子 | Aggregation Example
+	// 聚合函数的例子 | Aggregation Example
 	var examAggreData []struct {
 		Count     int `json:"count"`
 		Sum       int `json:"sum"`
