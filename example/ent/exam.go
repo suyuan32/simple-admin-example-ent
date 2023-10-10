@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/suyuan32/simple-admin-example-api/ent/course"
 	"github.com/suyuan32/simple-admin-example-api/ent/exam"
@@ -18,9 +19,9 @@ type Exam struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uint64 `json:"id,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
+	// Create Time | 创建日期
 	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
+	// Update Time | 修改日期
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Score holds the value of the "score" field.
 	Score uint8 `json:"score,omitempty"`
@@ -29,6 +30,7 @@ type Exam struct {
 	Edges         ExamEdges `json:"edges"`
 	exam_courses  *uint64
 	student_exams *uint64
+	selectValues  sql.SelectValues
 }
 
 // ExamEdges holds the relations/edges for other nodes in the graph.
@@ -82,7 +84,7 @@ func (*Exam) scanValues(columns []string) ([]any, error) {
 		case exam.ForeignKeys[1]: // student_exams
 			values[i] = new(sql.NullInt64)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type Exam", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -134,9 +136,17 @@ func (e *Exam) assignValues(columns []string, values []any) error {
 				e.student_exams = new(uint64)
 				*e.student_exams = uint64(value.Int64)
 			}
+		default:
+			e.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the Exam.
+// This includes values selected through modifiers, order, etc.
+func (e *Exam) Value(name string) (ent.Value, error) {
+	return e.selectValues.Get(name)
 }
 
 // QueryCourses queries the "courses" edge of the Exam entity.

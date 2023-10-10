@@ -20,7 +20,7 @@ import (
 type ExamQuery struct {
 	config
 	ctx          *QueryContext
-	order        []OrderFunc
+	order        []exam.OrderOption
 	inters       []Interceptor
 	predicates   []predicate.Exam
 	withCourses  *CourseQuery
@@ -57,7 +57,7 @@ func (eq *ExamQuery) Unique(unique bool) *ExamQuery {
 }
 
 // Order specifies how the records should be ordered.
-func (eq *ExamQuery) Order(o ...OrderFunc) *ExamQuery {
+func (eq *ExamQuery) Order(o ...exam.OrderOption) *ExamQuery {
 	eq.order = append(eq.order, o...)
 	return eq
 }
@@ -295,7 +295,7 @@ func (eq *ExamQuery) Clone() *ExamQuery {
 	return &ExamQuery{
 		config:       eq.config,
 		ctx:          eq.ctx.Clone(),
-		order:        append([]OrderFunc{}, eq.order...),
+		order:        append([]exam.OrderOption{}, eq.order...),
 		inters:       append([]Interceptor{}, eq.inters...),
 		predicates:   append([]predicate.Exam{}, eq.predicates...),
 		withCourses:  eq.withCourses.Clone(),

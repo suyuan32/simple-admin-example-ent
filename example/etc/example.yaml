@@ -4,7 +4,7 @@ Port: 8081
 Timeout: 30000
 
 Auth:
-  AccessSecret: # the same as core
+  AccessSecret: sdfasdfadsfdasfasdfasf # the same as core
   AccessExpire: 259200
 
 Log:
@@ -32,7 +32,7 @@ DatabaseConf:
   Port: 5432
   DBName: school
   Username: postgres # set your username
-  Password: '123456' # set your password
+  Password: 'simple-admin.' # set your password
   MaxOpenConn: 100
   SSLMode: disable
   CacheTime: 5

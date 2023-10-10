@@ -20,7 +20,7 @@ func (Course) Fields() []ent.Field {
 
 func (Course) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		mixins.BaseMixin{},
+		mixins.IDMixin{},
 	}
 }
 

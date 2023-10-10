@@ -23,7 +23,7 @@ func (Student) Fields() []ent.Field {
 
 func (Student) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		mixins.BaseMixin{},
+		mixins.IDMixin{},
 	}
 }
 

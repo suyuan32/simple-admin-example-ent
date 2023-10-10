@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/suyuan32/simple-admin-example-api/ent/course"
 )
@@ -16,9 +17,9 @@ type Course struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uint64 `json:"id,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
+	// Create Time | 创建日期
 	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
+	// Update Time | 修改日期
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
@@ -26,7 +27,8 @@ type Course struct {
 	Code int8 `json:"code,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CourseQuery when eager-loading is set.
-	Edges CourseEdges `json:"edges"`
+	Edges        CourseEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // CourseEdges holds the relations/edges for other nodes in the graph.
@@ -70,7 +72,7 @@ func (*Course) scanValues(columns []string) ([]any, error) {
 		case course.FieldCreatedAt, course.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type Course", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -114,9 +116,17 @@ func (c *Course) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				c.Code = int8(value.Int64)
 			}
+		default:
+			c.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the Course.
+// This includes values selected through modifiers, order, etc.
+func (c *Course) Value(name string) (ent.Value, error) {
+	return c.selectValues.Get(name)
 }
 
 // QueryStudents queries the "students" edge of the Course entity.

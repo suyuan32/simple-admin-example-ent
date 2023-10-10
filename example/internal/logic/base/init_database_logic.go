@@ -34,7 +34,7 @@ func NewInitDatabaseLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Init
 }
 
 func (l *InitDatabaseLogic) InitDatabase() (resp *types.BaseMsgResp, err error) {
-	if err := l.svcCtx.DB.Schema.Create(l.ctx, schema.WithForeignKeys(false), schema.WithDropColumn(true),
+	if err := l.svcCtx.DB.Schema.Create(l.ctx, schema.WithForeignKeys(true), schema.WithDropColumn(true),
 		schema.WithDropIndex(true)); err != nil {
 		logx.Errorw(logmsg.DatabaseError, logx.Field("detail", err.Error()))
 		return nil, errorx.NewCodeInternalError(err.Error())

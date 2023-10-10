@@ -204,11 +204,7 @@ func HasCourses() predicate.Exam {
 // HasCoursesWith applies the HasEdge predicate on the "courses" edge with a given conditions (other predicates).
 func HasCoursesWith(preds ...predicate.Course) predicate.Exam {
 	return predicate.Exam(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(CoursesInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, CoursesTable, CoursesColumn),
-		)
+		step := newCoursesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -231,11 +227,7 @@ func HasStudents() predicate.Exam {
 // HasStudentsWith applies the HasEdge predicate on the "students" edge with a given conditions (other predicates).
 func HasStudentsWith(preds ...predicate.Student) predicate.Exam {
 	return predicate.Exam(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(StudentsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, StudentsTable, StudentsColumn),
-		)
+		step := newStudentsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -246,32 +238,15 @@ func HasStudentsWith(preds ...predicate.Student) predicate.Exam {
 
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Exam) predicate.Exam {
-	return predicate.Exam(func(s *sql.Selector) {
-		s1 := s.Clone().SetP(nil)
-		for _, p := range predicates {
-			p(s1)
-		}
-		s.Where(s1.P())
-	})
+	return predicate.Exam(sql.AndPredicates(predicates...))
 }
 
 // Or groups predicates with the OR operator between them.
 func Or(predicates ...predicate.Exam) predicate.Exam {
-	return predicate.Exam(func(s *sql.Selector) {
-		s1 := s.Clone().SetP(nil)
-		for i, p := range predicates {
-			if i > 0 {
-				s1.Or()
-			}
-			p(s1)
-		}
-		s.Where(s1.P())
-	})
+	return predicate.Exam(sql.OrPredicates(predicates...))
 }
 
 // Not applies the not operator on the given predicate.
 func Not(p predicate.Exam) predicate.Exam {
-	return predicate.Exam(func(s *sql.Selector) {
-		p(s.Not())
-	})
+	return predicate.Exam(sql.NotPredicates(p))
 }

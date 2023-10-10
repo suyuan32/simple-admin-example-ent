@@ -19,7 +19,7 @@ func (Exam) Fields() []ent.Field {
 
 func (Exam) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		mixins.BaseMixin{},
+		mixins.IDMixin{},
 	}
 }
 

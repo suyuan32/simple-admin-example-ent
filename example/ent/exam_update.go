@@ -107,7 +107,7 @@ func (eu *ExamUpdate) ClearStudents() *ExamUpdate {
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (eu *ExamUpdate) Save(ctx context.Context) (int, error) {
 	eu.defaults()
-	return withHooks[int, ExamMutation](ctx, eu.sqlSave, eu.mutation, eu.hooks)
+	return withHooks(ctx, eu.sqlSave, eu.mutation, eu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -326,7 +326,7 @@ func (euo *ExamUpdateOne) Select(field string, fields ...string) *ExamUpdateOne 
 // Save executes the query and returns the updated Exam entity.
 func (euo *ExamUpdateOne) Save(ctx context.Context) (*Exam, error) {
 	euo.defaults()
-	return withHooks[*Exam, ExamMutation](ctx, euo.sqlSave, euo.mutation, euo.hooks)
+	return withHooks(ctx, euo.sqlSave, euo.mutation, euo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

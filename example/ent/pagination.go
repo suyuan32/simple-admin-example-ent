@@ -58,7 +58,7 @@ func (o OrderDirection) reverse() OrderDirection {
 const errInvalidPagination = "INVALID_PAGINATION"
 
 type CoursePager struct {
-	Order  OrderFunc
+	Order  course.OrderOption
 	Filter func(*CourseQuery) (*CourseQuery, error)
 }
 
@@ -137,7 +137,7 @@ func (c *CourseQuery) Page(
 }
 
 type ExamPager struct {
-	Order  OrderFunc
+	Order  exam.OrderOption
 	Filter func(*ExamQuery) (*ExamQuery, error)
 }
 
@@ -216,7 +216,7 @@ func (e *ExamQuery) Page(
 }
 
 type StudentPager struct {
-	Order  OrderFunc
+	Order  student.OrderOption
 	Filter func(*StudentQuery) (*StudentQuery, error)
 }
 

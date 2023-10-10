@@ -108,7 +108,7 @@ func (ec *ExamCreate) Mutation() *ExamMutation {
 // Save creates the Exam in the database.
 func (ec *ExamCreate) Save(ctx context.Context) (*Exam, error) {
 	ec.defaults()
-	return withHooks[*Exam, ExamMutation](ctx, ec.sqlSave, ec.mutation, ec.hooks)
+	return withHooks(ctx, ec.sqlSave, ec.mutation, ec.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -240,11 +240,15 @@ func (ec *ExamCreate) createSpec() (*Exam, *sqlgraph.CreateSpec) {
 // ExamCreateBulk is the builder for creating many Exam entities in bulk.
 type ExamCreateBulk struct {
 	config
+	err      error
 	builders []*ExamCreate
 }
 
 // Save creates the Exam entities in the database.
 func (ecb *ExamCreateBulk) Save(ctx context.Context) ([]*Exam, error) {
+	if ecb.err != nil {
+		return nil, ecb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(ecb.builders))
 	nodes := make([]*Exam, len(ecb.builders))
 	mutators := make([]Mutator, len(ecb.builders))
@@ -261,8 +265,8 @@ func (ecb *ExamCreateBulk) Save(ctx context.Context) ([]*Exam, error) {
 					return nil, err
 				}
 				builder.mutation = mutation
-				nodes[i], specs[i] = builder.createSpec()
 				var err error
+				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, ecb.builders[i+1].mutation)
 				} else {

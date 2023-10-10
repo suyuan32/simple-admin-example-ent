@@ -21,7 +21,7 @@ import (
 type StudentQuery struct {
 	config
 	ctx         *QueryContext
-	order       []OrderFunc
+	order       []student.OrderOption
 	inters      []Interceptor
 	predicates  []predicate.Student
 	withCourses *CourseQuery
@@ -57,7 +57,7 @@ func (sq *StudentQuery) Unique(unique bool) *StudentQuery {
 }
 
 // Order specifies how the records should be ordered.
-func (sq *StudentQuery) Order(o ...OrderFunc) *StudentQuery {
+func (sq *StudentQuery) Order(o ...student.OrderOption) *StudentQuery {
 	sq.order = append(sq.order, o...)
 	return sq
 }
@@ -295,7 +295,7 @@ func (sq *StudentQuery) Clone() *StudentQuery {
 	return &StudentQuery{
 		config:      sq.config,
 		ctx:         sq.ctx.Clone(),
-		order:       append([]OrderFunc{}, sq.order...),
+		order:       append([]student.OrderOption{}, sq.order...),
 		inters:      append([]Interceptor{}, sq.inters...),
 		predicates:  append([]predicate.Student{}, sq.predicates...),
 		withCourses: sq.withCourses.Clone(),
@@ -519,7 +519,7 @@ func (sq *StudentQuery) loadExams(ctx context.Context, query *ExamQuery, nodes [
 	}
 	query.withFKs = true
 	query.Where(predicate.Exam(func(s *sql.Selector) {
-		s.Where(sql.InValues(student.ExamsColumn, fks...))
+		s.Where(sql.InValues(s.C(student.ExamsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -532,7 +532,7 @@ func (sq *StudentQuery) loadExams(ctx context.Context, query *ExamQuery, nodes [
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "student_exams" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "student_exams" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
