@@ -10,13 +10,11 @@ import (
 	"github.com/suyuan32/simple-admin-example-api/ent/course"
 	"github.com/suyuan32/simple-admin-example-api/ent/exam"
 	"github.com/suyuan32/simple-admin-example-api/ent/student"
-	"github.com/zeromicro/go-zero/core/errorx"
-	"log"
-
 	"github.com/suyuan32/simple-admin-example-api/internal/svc"
 	"github.com/suyuan32/simple-admin-example-api/internal/types"
-
+	"github.com/zeromicro/go-zero/core/errorx"
 	"github.com/zeromicro/go-zero/core/logx"
+	"log"
 )
 
 type InitDatabaseLogic struct {
@@ -40,13 +38,33 @@ func (l *InitDatabaseLogic) InitDatabase() (resp *types.BaseMsgResp, err error) 
 		return nil, errorx.NewCodeInternalError(err.Error())
 	}
 
-	// 获取所有学生信息 | Get All Student Data
-	studentData, _ := l.svcCtx.DB.Debug().Student.Query().All(l.ctx)
+	//// 获取所有学生信息 | Get All Student Data
+	studentData, _ := l.svcCtx.DB.Student.Query().All(l.ctx)
 	fmt.Println("All Students' data: ", studentData)
 
 	// 获取所有学生名字和年龄信息 | Get Student's name and age  data
 	studentPartialData, _ := l.svcCtx.DB.Student.Query().Select(student.FieldName, student.FieldAge).All(l.ctx)
 	fmt.Println("All Students' name and age data: ", studentPartialData)
+
+	// 给 Jack 添加一门数学课
+	courseMath, err := l.svcCtx.DB.Course.Query().Where(course.NameEQ("Math")).First(l.ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = l.svcCtx.DB.Student.Update().Where(student.NameEQ("Jack")).AddCourses(courseMath).Exec(l.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = l.svcCtx.DB.Student.Update().Where(student.NameEQ("Mike")).AddCourseIDs(2).Exec(l.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = l.svcCtx.DB.Exam.Create().SetCoursesID(2).SetStudentsID(2).SetScore(65).Exec(l.ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	// 获取Jack的信息 | Get Jack Information
 	jackData, _ := l.svcCtx.DB.Student.Query().Where(student.NameEQ("Jack")).First(l.ctx)
@@ -77,7 +95,7 @@ func (l *InitDatabaseLogic) InitDatabase() (resp *types.BaseMsgResp, err error) 
 	}
 	_ = l.svcCtx.DB.Exam.Query().GroupBy(exam.StudentsColumn).Aggregate(ent.Count(),
 		ent.Sum(exam.FieldScore)).Scan(l.ctx, &examAggreData)
-	fmt.Println("Exam aggregation: ", examAggreData)
+	fmt.Printf("Exam aggregation: %+v", examAggreData)
 
 	// 纯 sql 例子 | Raw sql example
 	rows, _ := l.svcCtx.DB.QueryContext(l.ctx, "select name from students;")
@@ -94,6 +112,15 @@ func (l *InitDatabaseLogic) InitDatabase() (resp *types.BaseMsgResp, err error) 
 		names = append(names, name)
 	}
 	fmt.Println("Raw data: ", names)
+
+	page, err := l.svcCtx.DB.Student.Query().Page(l.ctx, 1, 10, func(pager *ent.StudentPager) {
+		pager.Order = ent.Desc(student.FieldID)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(page.List)
 
 	return &types.BaseMsgResp{Msg: l.svcCtx.Trans.Trans(l.ctx, i18n.Success)}, nil
 }
